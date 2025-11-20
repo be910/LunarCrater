@@ -10,7 +10,7 @@ function init() {
     setupSVG();
     setupSlider();
     loadPolygon("mare_imbrium.geojson");
-    loadCraters("erased_craters_mare.geojson");
+    loadCraters();
 }
 
 // Projection
@@ -108,14 +108,15 @@ function drawMarePolygon() {
 
 // Load Craters
 function loadCraters(file) {
-    d3.json(file).then(data => {
+    const url = "https://media.githubusercontent.com/media/be_910/LunarCrater_FinProject/main/erased_craters_mare.geojson";
+    
+    d3.json(url).then(data => {
         allCraters = data.features;
 
-        // Set slider max
+        // set slider max
         const maxTimestep = d3.max(allCraters, d => d.properties.TimeStepCreated);
         const slider = document.getElementById("timestepSlider");
         slider.max = maxTimestep;
-
         updateCratersForTimestep(+slider.value);
     }).catch(err => console.error(err));
 }
