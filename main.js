@@ -108,7 +108,7 @@ function drawMarePolygon() {
 
 // Load Craters
 function loadCraters(file) {
-    const url = "https://media.githubusercontent.com/media/be_910/LunarCrater_FinProject/main/erased_craters_mare.geojson";
+    const url = "https://media.githubusercontent.com/media/be_910/LunarCrater/main/erased_craters_mare.geojson";
     
     d3.json(url).then(data => {
         allCraters = data.features;
