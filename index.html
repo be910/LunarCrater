@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunar Crater Projection</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="main.js" type="module"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Moon Crater Visualization</h1>
+            <div class="subtitle">Interactive map of erased craters with timestep slider</div>
+        </header>
+
+        <!-- Moon visualization -->
+        <div id="visualization"></div>
+        <div id="legendContainer"></div>
+
+        <!-- Slider controls -->
+        <div id="sliderContainer">
+            <label for="timestepSlider">Timestep:</label>
+            <input type="range" id="timestepSlider" min="0" value="0" step="1">
+            <span id="timestepValue">0</span>
+        </div>
+
+        <!-- Reset zoom button -->
+        <div style="text-align:center; margin-top:10px;">
+            <button onclick="resetZoom()">Reset Zoom</button>
+        </div>
+    </div>
+</body>
+</html>
