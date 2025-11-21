@@ -107,9 +107,38 @@ h1 {
     stroke-width: 0.5;
 }
 
+/* Mare polygons */
+.mare-polygon {
+    fill: rgba(9, 255, 0, 0.1);
+    stroke: rgba(124, 247, 72, 1);
+    stroke-width: 1;
+    fill-rule: evenodd;
+    cursor: pointer;
+    transition: fill 0.2s, stroke 0.2s;
+}
+
+.mare-polygon.hover {
+    fill: rgba(255, 0, 225, 0.3);
+    stroke: rgb(217, 0, 255);
+}
+
+/* Mare callout labels */
+.mare-label {
+    font-size: 15px;
+    fill: yellow;
+    pointer-events: none;
+}
+
+/* Mare arrows */
+.mare-arrow {
+    stroke: yellow;
+    stroke-width: 1;
+    pointer-events: none;
+}
+
 /* Crater default style */
 .crater {
-    stroke: #d3a0c7;                 /* stroke */
+    stroke: #d3a0c7;
     stroke-width: 0.3;
     opacity: 0.8;
     cursor: pointer;
@@ -164,7 +193,7 @@ h1 {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 1px solid #fff; /* stroke */
+    border: 1px solid #fff;
 }
 
 /* Responsive design */

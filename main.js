@@ -2,15 +2,54 @@
 const width = 960;
 const height = 480;
 
-let mareImbrium;
+let marePolygons = [];
 let allCraters;
+let mareInfo = {};
 
 // Initialize
 function init() {
     setupSVG();
     setupSlider();
-    loadPolygon("mare_imbrium.geojson");
-    loadCraters();
+
+    const mareFiles = [
+        "mareData/mare_imbrium.geojson",
+        "mareData/mare_vaporum.geojson",
+        "mareData/mare_tranquillitatis.geojson",
+        "mareData/mare_serenitatis.geojson",
+        "mareData/mare_fecunditatis.geojson",
+        "mareData/mare_crisium.geojson",
+        "mareData/oceanus_procellarum.geojson"
+    ];
+
+    // Load mare info CSV
+    d3.csv("mareData/mareInfo.csv").then(data => {
+        data.forEach(d => {
+            const key = d.Mare.trim().toLowerCase().replace(/\s+/g, "_");
+            mareInfo[key] = d;
+        });
+
+        // Load all GeoJSONs in parallel
+        const promises = mareFiles.map(file =>
+            d3.json(file).then(data => {
+                let feature = data.features[0];
+                const key = file.split("/").pop().replace(".geojson", "").trim().toLowerCase();
+
+                if (mareInfo[key]) feature.properties = { ...feature.properties, ...mareInfo[key] };
+
+                // Reverse Tranquillitatis if needed
+                if (key.includes("mare_tranquillitatis")) feature.geometry.coordinates[0].reverse();
+
+                return feature;
+            })
+        );
+
+        Promise.all(promises).then(features => {
+            marePolygons = features;
+            drawMarePolygons();
+            drawMareCallouts();
+            loadCraters(); // now safe to load craters
+        });
+    });
 }
 
 // Projection
@@ -75,36 +114,132 @@ function setupZoom(svg, g) {
     };
 }
 
-// Mare Polygon
-function loadPolygon(file) {
-    d3.json(file).then(data => {
-        mareImbrium = data.features[0];
-
-        // Normalize longitudes > 180
-        mareImbrium.geometry.coordinates[0] = mareImbrium.geometry.coordinates[0].map(([lon, lat]) => {
-            lon = lon - 180;
-            if (lon < -180) lon += 360;
-            return [lon, lat];
-        });
-
-        drawMarePolygon();
-    }).catch(err => console.error(err));
-}
-
-function drawMarePolygon() {
+function drawMarePolygons() {
     const g = window.g;
     const path = window.path;
 
     g.select(".mare").selectAll("*").remove();
+
     g.select(".mare")
-        .append("path")
-        .datum(mareImbrium)
+        .selectAll("path")
+        .data(marePolygons)
+        .join("path")
         .attr("class", "mare-polygon")
         .attr("d", path)
-        .attr("fill", "rgba(0,0,255,0.1)")
-        .attr("stroke", "#00f")
-        .attr("stroke-width", 1);
+        .on("mouseover", (event, d) => {
+            d3.select(event.currentTarget).classed("hover", true);
+
+            const info = d.properties;
+            d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .html(`
+                    <strong>${info["English Name"]}</strong><br/>
+                    Mare: ${info["Mare"]}<br/>
+                    Lat: ${info["Latitude"]}<br/>
+                    Lon: ${info["Longitude"]}<br/>
+                    Diameter: ${info["Diameter"]}
+                `)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", (event, d) => {
+            d3.select(event.currentTarget).classed("hover", false);
+            d3.selectAll(".tooltip").remove();
+        });
 }
+
+
+function drawMareCallouts() {
+    const g = window.g;
+    const path = window.path;
+
+    g.select(".mare-callouts").remove();
+    const calloutGroup = g.append("g").attr("class", "mare-callouts");
+
+    // Manual label positions
+    const mareLabelPositions = {
+        "mare_imbrium": { x: 450, y: 90 },
+        "mare_vaporum": { x: 490, y: 290 },
+        "mare_tranquillitatis": { x: 560, y: 340 },
+        "mare_serenitatis": { x: 600, y: 148 },
+        "mare_fecunditatis": { x: 670, y: 300 },
+        "mare_crisium": { x: 700, y: 200 },
+        "oceanus_procellarum": { x: 290, y: 310 }
+    };
+
+    // Per-mare arrow shortening (distance from label)
+    const mareShorten = {
+        "mare_imbrium": 8,
+        "mare_vaporum": 7,
+        "mare_tranquillitatis": 8,
+        "mare_serenitatis": 8,
+        "mare_fecunditatis": 9,
+        "mare_crisium": 6,
+        "oceanus_procellarum": 7
+    };
+
+    // Helper: get centroid for Polygon or MultiPolygon
+    function getCentroid(d) {
+        if (d.geometry.type === "Polygon") return path.centroid(d);
+        if (d.geometry.type === "MultiPolygon") {
+            let maxArea = 0, centroid = [0, 0];
+            d.geometry.coordinates.forEach(coords => {
+                const area = Math.abs(d3.polygonArea(coords[0]));
+                if (area > maxArea) {
+                    maxArea = area;
+                    centroid = path.centroid({ type: "Feature", geometry: { type: "Polygon", coordinates: coords } });
+                }
+            });
+            return centroid;
+        }
+        return [0, 0];
+    }
+
+    calloutGroup.selectAll("g")
+        .data(marePolygons)
+        .enter()
+        .append("g")
+        .each(function(d) {
+            const centroid = getCentroid(d);
+            if (!isFinite(centroid[0]) || !isFinite(centroid[1])) return;
+
+            const key = d.properties.Mare.toLowerCase().replace(/\s+/g, "_");
+            const labelPos = mareLabelPositions[key];
+            if (!labelPos) return;
+
+            const labelX = labelPos.x;
+            const labelY = labelPos.y;
+
+            const dx = labelX - centroid[0];
+            const dy = labelY - centroid[1];
+            const dist = Math.hypot(dx, dy);
+
+            // Use per-mare shorten distance or default 1
+            const shorten = mareShorten[key] || 1;
+            const arrowX = labelX - (dx / dist) * shorten;
+            const arrowY = labelY - (dy / dist) * shorten;
+
+            // Draw line arrow 
+            d3.select(this)
+                .append("line")
+                .attr("class", "mare-arrow")
+                .attr("x1", centroid[0])
+                .attr("y1", centroid[1])
+                .attr("x2", arrowX)
+                .attr("y2", arrowY);
+
+            // Draw label 
+            d3.select(this)
+                .append("text")
+                .attr("class", "mare-label")
+                .attr("x", labelX)
+                .attr("y", labelY)
+                .text(d.properties["Mare"])
+                .attr("text-anchor", dx >= 0 ? "start" : "end")
+                .attr("dy", dy >= 0 ? "0.8em" : "-0.2em");
+        });
+}
+
 
 // Load Craters
 function loadCraters(file) {
@@ -171,7 +306,7 @@ function updateCratersForTimestep(timestep) {
     const cratersThisStep = allCraters.filter(d =>
         d.properties.TimeStepCreated <= timestep &&
         d.properties.ErasedTimeStep > timestep &&
-        d3.geoContains(mareImbrium, d.geometry.coordinates)
+        marePolygons.some(m => d3.geoContains(m, d.geometry.coordinates))
     );
 
     const g = window.g;
