@@ -4,33 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lunar Crater Projection</title>
+
+    <!-- D3 + Scrollama -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
     <script src="main.js" type="module"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1>Moonscapes in Motion: Tracking Crater Evolution Across Lunar Seas</h1>
-            <div class="subtitle">Visualizing crater formation and evolution across the Moon’s mare regions</div>
-        </header>
 
-        <!-- Moon visualization -->
-        <div id="visualization"></div>
-        <div id="legendContainer"></div>
+    <!-- Main title -->
+    <header style="text-align:center; padding: 40px 0;">
+        <h1>Moonscapes in Motion: Tracking Crater Evolution Across Lunar Seas</h1>
+        <div class="subtitle" style="text-align:center; font-size:1.2rem; margin-top:10px;">
+            Visualizing crater formation and evolution across the Moon’s mare regions
+        </div>
+    </header>
 
-        <!-- Slider controls -->
-        <div id="sliderContainer">
-            <label for="timestepSlider">Timestep:</label>
-            <input type="range" id="timestepSlider" min="0" value="0" step="1">
-            <span id="timestepValue">0</span>
+    <!-- Scrollytelling layout -->
+    <div class="scrolly-container">
+
+        <!-- LEFT: Scroll text -->
+        <div class="scrolly-text">
+            <section class="step" data-step="1">
+                <h2>Why the Moon? </h2>
+                <p>
+                    The moon is the time capsule of the early Solar System. 
+                    With no atmosphere, no weather, and no plate tectonics, 
+                    the Moon's surface preserves billions of years of impact history 
+                    almost untouched. By reading the Moon's surface like an ancient archive, 
+                    scientists can reconstruct the timeline of our Solar System's evolve through
+                    the most violent meteor showers and volcanic activity.
+                </p>
+                 <p>
+                    The moon's surface is divided into two main types of terrain:
+                    the highlands and the marias. In this visualization, we focus on the
+                    marias, the darker basaltic plains we often see from Earth.
+            </section>
+
+            <section class="step" data-step="2">
+                <h2>What are Mare Regions?</h2>
+                <p>
+                    Mares are vast, dark plains formed when deep magma flooded giant impact 
+                    basins billions of years ago. These plains are younger and smoother than 
+                    the bright highlands, making them ideal for studying how craters accumulate! 
+                </p>
+                <p>
+                    In this visualization, we focus on several key mare regions:
+                    Mare Imbrium, Mare Serenitatis, Mare Tranquillitatis, and Oceanus Procellarum.
+                </p>
+            </section>
+
+            <section class="step" data-step="3">
+                <h2>What are craters?</h2>
+                <p>
+                    Craters are circular depressions on the Moon's surface caused by the collision 
+                    of meteoroids, asteroids, or comets. The energy released during these impacts 
+                    excavates rock and ejects material, forming a bowl-shaped cavity. Larger impacts 
+                    can create multi-ring basins, while smaller ones leave simple, round craters.
+                </p>
+                <p>
+                    By studying crater's evolution over time, scientists can reconstruct the history 
+                    of impacts across the Solar System.
+                </p>
+                
+            </section>
+
+            <section class="step" data-step="4">
+                <h2>Time Evolution</h2>
+                <p>
+                    The slider will eventually let you explore crater evolution step-by-step.
+                </p>
+
+                <div id="sliderContainer">
+                    <label for="timestepSlider">Timestep:</label>
+                    <input type="range" id="timestepSlider" min="0" value="0" step="1">
+                    <span id="timestepValue">0</span>
+                </div>
+            </section>
         </div>
 
-        <!-- Reset zoom button -->
-        <div style="text-align:center; margin-top:10px;">
-            <button onclick="resetZoom()">Reset Zoom</button>
+        <!-- RIGHT: Moon visualization -->
+        <div class="graphic">
+            <div id="visualization"></div>
+            <div id="legendContainer"></div>
         </div>
+
     </div>
+
 </body>
 </html>

@@ -1,44 +1,80 @@
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-    color: #e0e0e0;
-    overflow-x: hidden;
+    margin: 0;
+    font-family: sans-serif;
+    background-color: #121212; /* dark page background */
+    color: #e0e0e0; /* default text color */
 }
 
-/* Layout */
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
+/* Header / Page Title */
+header {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #1c1c1c;
+    border-bottom: 1px solid #333;
+}
+
+header h1 {
+    font-size: 2rem;
+    color: #ffffff;
+    margin: 0;
+}
+
+header .subtitle {
+    font-size: 1.2rem;
+    color: #aaaaaa;
+    margin-top: 10px;
+}
+
+
+/* Scrollytelling Layout */
+.scrolly-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    gap: 20px;
     padding: 20px;
 }
 
-/* Header */
-header {
-    text-align: center;
-    padding: 30px 0;
+/* LEFT column: scrollable text */
+.scrolly-text {
+    width: 35%;
+    padding: 20px 40px;
+    overflow-y: scroll;
+    height: 100vh;
+    box-sizing: border-box;
+    background: rgba(20, 20, 20, 0.85);
+    border-right: 1px solid #444;
+    backdrop-filter: blur(5px);
+    color: #e0e0e0;
 }
 
-h1 {
-    font-size: 2.5em;
+.step {
+    margin-bottom: 80px;
+}
+
+.step h2 {
     color: #ffffff;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    margin-bottom: 10px;
 }
 
-.subtitle {
-    font-size: 1.1em;
-    color: #a0a0a0;
-    margin-bottom: 20px;
+.step p {
+    color: #cccccc;
 }
 
-/* Visualization container */
+/* RIGHT column: sticky visualization */
+.graphic {
+    width: 65%;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* Visualization Container */
 #visualization {
     display: flex;
     justify-content: center;
@@ -51,11 +87,13 @@ h1 {
 }
 
 #visualization svg {
+    max-width: 100%;
+    height: auto;
     border-radius: 8px;
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
 }
 
-/* Slider container */
+/* Slider */
 #sliderContainer {
     text-align: center;
     margin: 20px 0;
@@ -107,7 +145,7 @@ h1 {
     stroke-width: 0.5;
 }
 
-/* Mare polygons */
+/* Mare Polygons */
 .mare-polygon {
     fill: rgba(9, 255, 0, 0.1);
     stroke: rgba(124, 247, 72, 1);
@@ -136,7 +174,7 @@ h1 {
     pointer-events: none;
 }
 
-/* Crater default style */
+/* Craters */
 .crater {
     stroke: #d3a0c7;
     stroke-width: 0.3;
@@ -145,15 +183,14 @@ h1 {
     transition: all 0.2s ease;
 }
 
-/* Crater hover style */
 .crater-hover {
-    fill: rgba(247, 124, 29, 0.4);  
-    stroke: #d25151;               
+    fill: rgba(247, 124, 29, 0.4);
+    stroke: #d25151;
     stroke-width: 0.5;
     opacity: 0.9;
 }
 
-/* Tooltip */
+ /* Tooltip */
 .tooltip {
     position: absolute;
     background: rgba(0, 0, 0, 0.9);
@@ -172,7 +209,7 @@ h1 {
     font-size: 14px;
 }
 
-/* Discrete legend */
+/*Legend*/
 #legendContainer {
     display: flex;
     justify-content: center;
@@ -196,12 +233,12 @@ h1 {
     border: 1px solid #fff;
 }
 
-/* Responsive design */
+/* Responsive Design */
 @media (max-width: 1024px) {
     h1 {
         font-size: 2em;
     }
-    
+
     .container {
         padding: 15px;
     }
@@ -211,11 +248,11 @@ h1 {
     h1 {
         font-size: 1.5em;
     }
-    
+
     .subtitle {
         font-size: 1em;
     }
-    
+
     #visualization {
         padding: 10px;
     }
