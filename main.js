@@ -243,10 +243,47 @@ function drawMareCallouts() {
 
 // Load Craters
 function loadCraters(file) {
-    const url = "https://media.githubusercontent.com/media/be910/LunarCrater/main/erased_craters_mare.geojson";
-    
-    d3.json(url).then(data => {
-        allCraters = data.features;
+    // mare crater data
+    const survivedURL = "craterData/survived_craters_mare.csv";
+    const erasedURL = "craterData/erased_craters_mare.csv";
+
+    Promise.all([
+        d3.csv(survivedURL),
+        d3.csv(erasedURL)
+    ])
+    .then(([survivedRows, erasedRows]) => {
+
+        // convert CSV to GeoJSON
+        const survivedGeo = survivedRows.map(d => ({
+            type: "Feature",
+            geometry: {
+                type: "Point",
+                coordinates: [+d.Longitude, +d.Latitude]
+            },
+            properties: {
+                diameter: +d.diameter,
+                TimeStepCreated: +d.TimeStepCreated,
+                ErasedTimeStep: Infinity,       // survived = never erased
+                status: "survived"
+            }
+        }));
+
+        const erasedGeo = erasedRows.map(d => ({
+            type: "Feature",
+            geometry: {
+                type: "Point",
+                coordinates: [+d.Longitude, +d.Latitude]
+            },
+            properties: {
+                diameter: +d.diameter,
+                TimeStepCreated: +d.TimeStepCreated,
+                ErasedTimeStep: +d.ErasedTimeStep,
+                status: "erased"
+            }
+        }));
+
+        // merge into one list
+        allCraters = [...survivedGeo, ...erasedGeo];
 
         // set slider max
         const maxTimestep = d3.max(allCraters, d => d.properties.TimeStepCreated);
@@ -301,7 +338,7 @@ function getCraterColor(d) {
 
 // Update craters for timestep
 function updateCratersForTimestep(timestep) {
-    if (!allCraters || !mareImbrium) return;
+    if (!allCraters || marePolygons.length === 0) return;
 
     const cratersThisStep = allCraters.filter(d =>
         d.properties.TimeStepCreated <= timestep &&
@@ -322,9 +359,9 @@ function updateCratersForTimestep(timestep) {
         .attr("cx", d => projection(d.geometry.coordinates)[0])
         .attr("cy", d => projection(d.geometry.coordinates)[1])
         .attr("r", d => craterScale(d.properties.diameter))
-        .attr("fill", d => getCraterColor(d.properties.diameter))
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 0.5)
+        .attr("fill", d => d.properties.status === "erased"? "rgba(180, 180, 180, 0.6)": "rgba(0, 255, 220, 0.9)")
+        .attr("stroke", d => d.properties.status === "erased" ? "#cccccc" : "#00ffee")
+        .attr("stroke-width", d => d.properties.status === "erased" ? 0.5 : 1.0)
         .on("mouseover", function(event, d) {
             d3.select(this).attr("class", "crater crater-hover");
             showTooltip(event, d);
@@ -339,23 +376,24 @@ function updateCratersForTimestep(timestep) {
 
 // Draw legend below SVG
 function drawLegend() {
-    if (!document.getElementById("legendContainer")) {
-        d3.select("#visualization")
-          .append("div")
-          .attr("id", "legendContainer");
-    }
-
     const container = d3.select("#legendContainer");
     container.selectAll("*").remove();
 
-    diameterBins.forEach((bin, i) => {
-        const nextBin = diameterBins[i + 1] || ">";
-        container.append("div")
-            .attr("class", "legend-item")
-            .html(`
-                <div class="legend-circle" style="background:${colors[i]}; border:1px solid #fff;"></div>
-                ${bin}${nextBin !== ">" ? "–" + nextBin + " km" : "+ km"}
-            `);
+    const items = [
+        { label: "Survived Crater", color: "rgba(0, 255, 220, 0.9)" },  // cyan
+        { label: "Erased Crater", color: "rgba(200, 200, 200, 0.6)" }   // gray
+    ];
+
+    items.forEach(item => {
+        const row = container.append("div")
+            .attr("class", "legend-item");
+
+        row.append("div")
+            .attr("class", "legend-circle")
+            .style("background", item.color);
+
+        row.append("span")
+            .text(item.label);
     });
 }
 
