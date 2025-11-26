@@ -233,6 +233,19 @@ header .subtitle {
     border: 1px solid #fff;
 }
 
+/* canvas */
+#visualization {
+    position: relative;
+    display: inline-block;
+}
+
+#visualization svg,
+#visualization canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     h1 {
