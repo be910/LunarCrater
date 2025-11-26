@@ -76,21 +76,23 @@ header .subtitle {
 
 /* Visualization Container */
 #visualization {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
+    width: 960px;
+    height: 480px;
     margin: 0 auto;
-    padding: 20px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-#visualization svg {
-    max-width: 100%;
-    height: auto;
+#visualization svg,
+#visualization canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 960px;
+    height: 480px;
     border-radius: 8px;
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
 }
 
 /* Slider */
@@ -231,19 +233,6 @@ header .subtitle {
     height: 16px;
     border-radius: 50%;
     border: 1px solid #fff;
-}
-
-/* canvas */
-#visualization {
-    position: relative;
-    display: inline-block;
-}
-
-#visualization svg,
-#visualization canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
 /* Responsive Design */
