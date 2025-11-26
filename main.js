@@ -54,10 +54,7 @@ function init() {
 
 // Projection
 function setupSVG() {
-    const container = d3.select("#visualization");
-
-    // SVG for basemap + mare outlines
-    const svg = container
+    const svg = d3.select("#visualization")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
@@ -71,21 +68,10 @@ function setupSVG() {
 
     const g = svg.append("g");
 
-    // canvas for craters (on top of the SVG)
-    const canvas = container
-        .append("canvas")
-        .attr("width", width)
-        .attr("height", height)
-        .node();
-
-    const craterCtx = canvas.getContext("2d");
-
     window.svg = svg;
     window.g = g;
     window.projection = projection;
     window.path = path;
-    window.craterCanvas = canvas;
-    window.craterCtx = craterCtx;
 
     // Moon surface
     g.append("image")
@@ -257,67 +243,47 @@ function drawMareCallouts() {
 
 // Load Craters
 function loadCraters(file) {
+     // mare crater data
+    const survivedURL = "craterData/survived_craters_mare.csv";
+    const erasedURL = "craterData/erased_craters_mare.csv";
+
     Promise.all([
-        d3.csv("craterData/survived_craters_mare.csv"),
-        d3.csv("craterData/erased_craters_mare.csv")
+        d3.csv(survivedURL),
+        d3.csv(erasedURL)
     ])
-    .then(([survived, erased]) => {
-        
-        const projection = window.projection;
+    .then(([survivedRows, erasedRows]) => {
 
-        const survivedFeatures = survived.map(d => {
-            const lon = +d.Longitude;
-            const lat = +d.Latitude;
-            const [x, y] = projection([lon, lat]);
+        // convert CSV to GeoJSON
+        const survivedGeo = survivedRows.map(d => ({
+            type: "Feature",
+            geometry: {
+                type: "Point",
+                coordinates: [+d.Longitude, +d.Latitude]
+            },
+            properties: {
+                diameter: +d.diameter,
+                TimeStepCreated: +d.TimeStepCreated,
+                ErasedTimeStep: Infinity,       // survived = never erased
+                status: "survived"
+            }
+        }));
 
-            return {
-                type: "Feature",
-                geometry: {
-                    type: "Point",
-                    coordinates: [lon, lat]
-                },
-                properties: {
-                    diameter: +d.diameter,
-                    TimeStepCreated: +d.TimeStepCreated,
-                    ErasedTimeStep: Infinity,     // survived → never erased
-                    status: "survived",
-                    x,
-                    y
-                }
-            };
-        });
+        const erasedGeo = erasedRows.map(d => ({
+            type: "Feature",
+            geometry: {
+                type: "Point",
+                coordinates: [+d.Longitude, +d.Latitude]
+            },
+            properties: {
+                diameter: +d.diameter,
+                TimeStepCreated: +d.TimeStepCreated,
+                ErasedTimeStep: +d.ErasedTimeStep,
+                status: "erased"
+            }
+        }));
 
-        const erasedFeatures = erased.map(d => {
-            const lon = +d.Longitude;
-            const lat = +d.Latitude;
-            const [x, y] = projection([lon, lat]);
-
-            return {
-                type: "Feature",
-                geometry: {
-                    type: "Point",
-                    coordinates: [lon, lat]
-                },
-                properties: {
-                    diameter: +d.diameter,
-                    TimeStepCreated: +d.TimeStepCreated,
-                    ErasedTimeStep: +d.SurvivedTimeStep || +d.ErasedTimeStep || 999999,
-                    status: "erased",
-                    x,
-                    y
-                }
-            };
-        });
-
-        // combine
-        allCraters = [...survivedFeatures, ...erasedFeatures];
-
-        // compute which craters fall inside mare polygons
-        allCraters.forEach(d => {
-            d.properties.insideMare = marePolygons.some(m =>
-                d3.geoContains(m, d.geometry.coordinates)
-            );
-        });
+        // merge into one list
+        allCraters = [...survivedGeo, ...erasedGeo];
 
         // set slider max
         const maxTimestep = d3.max(allCraters, d => d.properties.TimeStepCreated);
@@ -372,70 +338,42 @@ function getCraterColor(d) {
 
 // Update craters for timestep
 function updateCratersForTimestep(timestep) {
-    if (!allCraters || marePolygons.length === 0 || !window.craterCtx) return;
+    if (!allCraters || marePolygons.length === 0) return;
 
-    const ctx = window.craterCtx;
-
-    const visible = allCraters.filter(d =>
+    const cratersThisStep = allCraters.filter(d =>
         d.properties.TimeStepCreated <= timestep &&
         d.properties.ErasedTimeStep > timestep &&
-        d.properties.insideMare
+        marePolygons.some(m => d3.geoContains(m, d.geometry.coordinates))
     );
 
-    ctx.clearRect(0, 0, width, height);
-
-    // size scale based on diameter
+    const g = window.g;
+    const projection = window.projection;
     const craterScale = d3.scaleSqrt().domain([0, 100]).range([2, 8]);
 
-    visible.forEach(d => {
-        const { x, y, diameter, status } = d.properties;
-        const r = craterScale(diameter);
-
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, 2 * Math.PI);
-
-        // Survived = cyan, Erased = gray
-        if (status === "erased") {
-            ctx.fillStyle = "rgba(180, 180, 180, 0.6)";
-            ctx.strokeStyle = "#cccccc";
-            ctx.lineWidth = 0.5;
-        } else {
-            ctx.fillStyle = "rgba(0, 255, 220, 0.9)";
-            ctx.strokeStyle = "#00ffee";
-            ctx.lineWidth = 1.0;
-        }
-
-        ctx.fill();
-        ctx.stroke();
-    });
+    g.select(".craters").selectAll("*").remove();
+    g.select(".craters")
+        .selectAll(".crater")
+        .data(cratersThisStep)
+        .join("circle")
+        .attr("class", "crater")
+        .attr("cx", d => projection(d.geometry.coordinates)[0])
+        .attr("cy", d => projection(d.geometry.coordinates)[1])
+        .attr("r", d => craterScale(d.properties.diameter))
+        .attr("fill", d => d.properties.status === "erased"? "rgba(180, 180, 180, 0.6)": "rgba(0, 255, 220, 0.9)")
+        .attr("stroke", d => d.properties.status === "erased" ? "#cccccc" : "#00ffee")
+        .attr("stroke-width", d => d.properties.status === "erased" ? 0.5 : 1.0)
+        .on("mouseover", function(event, d) {
+            d3.select(this).attr("class", "crater crater-hover");
+            showTooltip(event, d);
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("class", "crater");
+            hideTooltip();
+        });
 
     // Legend stays the same
     drawLegend();
 }
-
-//   g.select(".craters").selectAll("*").remove();
-//    g.select(".craters")
-//        .selectAll(".crater")
-//        .data(cratersThisStep)
-//        .join("circle")
-//        .attr("class", "crater")
-//        .attr("cx", d => projection(d.geometry.coordinates)[0])
-//        .attr("cy", d => projection(d.geometry.coordinates)[1])
-//        .attr("r", d => craterScale(d.properties.diameter))
-//        .attr("fill", d => d.properties.status === "erased"? "rgba(180, 180, 180, 0.6)": "rgba(0, 255, 220, 0.9)")
-//        .attr("stroke", d => d.properties.status === "erased" ? "#cccccc" : "#00ffee")
-//        .attr("stroke-width", d => d.properties.status === "erased" ? 0.5 : 1.0)
-//        .on("mouseover", function(event, d) {
-//            d3.select(this).attr("class", "crater crater-hover");
-//            showTooltip(event, d);
-//        })
-//        .on("mouseout", function() {
-//            d3.select(this).attr("class", "crater");
-//            hideTooltip();
-//        });
-
-//    drawLegend();
-//}
 
 // Draw legend below SVG
 function drawLegend() {
