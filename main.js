@@ -314,14 +314,7 @@ function drawMarePolygons(instance) {
                     .replace(/\s+/g, "_");
 
                 console.log("Clicked mare:", mareKey);
-
-                // Get current slider value
-                const slider = document.getElementById("timestepSlider");
-                const timestep = slider ? +slider.value : 0;
-
-                // Store current mare and update the detail panel
-                d3.select("#mareStatsPanel").attr("data-current-mare", mareKey);
-                updateMareDetailPanel(mareKey, timestep);
+                showMareStatsPanel(mareKey, d.properties.Mare);
             });
 
     } else {
@@ -546,32 +539,6 @@ function setupSlider() {
             }, 50);
         });
     }
-
-    // Section 6 slider (independent, timestep)
-    const mareSlider = document.getElementById("mareTimestepSliderInput");
-    const mareLabel = document.getElementById("mareTimestepValue");
-
-    if (mareSlider && mareLabel) {
-        mareSlider.min = 0;
-        mareSlider.max = 9;
-        mareSlider.value = 0;
-
-        let sliderTimeout;
-        mareSlider.addEventListener("input", () => {
-            clearTimeout(sliderTimeout);
-            sliderTimeout = setTimeout(() => {
-                const t = +mareSlider.value;
-                mareLabel.textContent = t;
-
-                // Update mare stats panel (still timestep)
-                const panel = d3.select("#mareStatsPanel");
-                const mareKey = panel.attr("data-current-mare");
-                if (mareKey) {
-                    updateMareDetailPanel(mareKey, t);
-                }
-            }, 50);
-        });
-    }
 }
 
 
@@ -587,156 +554,226 @@ function loadMareStats() {
 // =======================
 // Mare Detail Panel (Section 6)
 // =======================
+
 function createMareDetailPanel() {
-  // If already exists, stop
-  if (document.getElementById("mareStatsPanel")) return;
+    if (document.getElementById("mareStatsPanel")) return;
 
-  const panel = document.createElement("div");
-  panel.id = "mareStatsPanel";
+    const panel = document.createElement("div");
+    panel.id = "mareStatsPanel";
 
-  panel.style.position = "fixed";   // IMPORTANT
-  panel.style.top = "0";
-  panel.style.right = "0";
-  panel.style.width = "350px";
-  panel.style.height = "100vh";
-  panel.style.background = "#111";
-  panel.style.color = "#fff";
-  panel.style.padding = "16px";
-  panel.style.overflowY = "auto";
-  panel.style.zIndex = "9999";      // float above SVG
-  panel.style.display = "none";     // hidden by default
-  panel.style.boxShadow = "-4px 0 10px rgba(0,0,0,0.4)";
+    panel.style.position = "fixed";
+    panel.style.top = "0";
+    panel.style.right = "0";
+    panel.style.width = "380px";
+    panel.style.height = "100vh";
+    panel.style.background = "#111";
+    panel.style.color = "#fff";
+    panel.style.padding = "16px";
+    panel.style.overflowY = "auto";
+    panel.style.zIndex = "9999";
+    panel.style.display = "none";
+    panel.style.boxShadow = "-4px 0 10px rgba(0,0,0,0.4)";
 
-  panel.innerHTML = `
-    <h2 id="panelTitle">Mare Details</h2>
-    <div id="panelBody">Click on a mare to view stats.</div>
-  `;
+    panel.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="panelTitle" style="margin:0;">Mare Details</h2>
+            <button id="closePanelBtn" style="background:#333;color:#fff;border:none;padding:4px 8px;cursor:pointer;">✖</button>
+        </div>
+        <div id="panelBody">
+            <div id="sizeStatsContainer"></div>
+            <svg id="sizeHistogram" width="340" height="150"></svg>
+            <div id="depthStatsContainer"></div>
+            <svg id="depthHistogram" width="340" height="150"></svg>
+            <div id="panelCraters"></div>
+        </div>
+    `;
 
-  // Append to BODY, not to svg container
-  document.body.appendChild(panel);
+    document.body.appendChild(panel);
+
+    document.getElementById("closePanelBtn").addEventListener("click", () => {
+        panel.style.display = "none";
+        clearPanelMarkers();
+    });
 }
 
+function showMareStatsPanel(mareName, displayName) {
+    const panelTitle = d3.select("#marePanelTitle");
+    panelTitle.html(displayName);
+    d3.json("json/output_new.json").then(data => {
+        const tempData = data[mareName];
+        if (!mareName) return;
+        const allSizes = tempData.all_sizes;
+        const allDepths = tempData.all_depths;
 
-// =======================
-// Update mare panel
-// =======================
-function updateMareDetailPanel(key, t) {
-    const panel = d3.select("#mareStatsPanel");
-    panel.style("display", "block");
-    panel.attr("data-current-mare", key);
+        // Compute stats
+        const stats = {
+            numCraters: allSizes.length,
+            avgSize: d3.mean(allSizes).toFixed(2),
+            minSize: d3.min(allSizes).toFixed(2),
+            maxSize: d3.max(allSizes).toFixed(2),
+            medSize: d3.median(allSizes).toFixed(2),
+            avgDepth: d3.mean(allDepths).toFixed(2),
+            minDepth: d3.min(allDepths).toFixed(2),
+            maxDepth: d3.max(allDepths).toFixed(2),
+            medDepth: d3.median(allDepths).toFixed(2)
+        };
 
-    const data = mareStats[key]?.[String(t)];
+        // Populate summary statistics panel
+        const statsContainer = d3.select("#mareStatsContainer");
+        statsContainer.html(""); // clear previous content
+        // statsContainer.append("h4").text(`Statistics for ${mareName}`);
+        statsContainer.append("p").html(`
+            <strong>Number of Craters:</strong> ${stats.numCraters}<br>
+            <strong>Size (m):</strong> Avg ${stats.avgSize}, Med ${stats.medSize}, Min ${stats.minSize}, Max ${stats.maxSize}<br>
+            <strong>Depth (m):</strong> Avg ${stats.avgDepth}, Med ${stats.medDepth}, Min ${stats.minDepth}, Max ${stats.maxDepth}
+        `);
 
-    if (!data) {
-        d3.select("#marePanelTitle").text("No data available");
-        d3.select("#panelCraters").html("");
-        d3.select("#mareSizeHistogram").selectAll("*").remove();
-        clearPanelMarkers();
-        return;
+        // Draw size histogram
+        drawHistogram("#mareSizeHistogram", allSizes, stats.minSize, stats.maxSize);
+        drawHistogram("#mareDepthHistogram", allDepths, stats.minDepth, stats.maxDepth);
+        plotCraterSection6(
+            tempData.size_stats.min_size_crater,
+            tempData.size_stats.max_size_crater,
+            tempData.depth_stats.min_depth_crater,
+            tempData.depth_stats.max_depth_crater);
+    });
+}
+
+function plotCraterSection6(minSize, maxSize, minDepth, maxDepth) {
+    const instance = svgInstances['mare-stats'];
+    if (!instance) return;
+
+    const { g, projection } = instance;
+    const craterGroup = g.select(".craters");
+    craterGroup.selectAll("*").remove(); // clear previous craters
+
+    const allCratersToPlot = [
+        { type: "minSize", ...minSize },
+        { type: "maxSize", ...maxSize },
+        { type: "minDepth", ...minDepth },
+        { type: "maxDepth", ...maxDepth }
+    ];
+
+    const colorMap = {
+        minSize: "#00ffbf",
+        maxSize: "#ff4d4d",
+        minDepth: "#00bfff",
+        maxDepth: "#ffbf00"
+    };
+
+    // Remove duplicates for plotting only
+    const uniqueCraterData = Array.from(new Map(
+        allCratersToPlot.map(d => [`${d.longitude},${d.latitude},${d.type}`, d])
+    ).values());
+
+    // Plot craters
+    craterGroup.selectAll("circle")
+        .data(uniqueCraterData)
+        .enter()
+        .append("circle")
+        .attr("cx", d => projection([d.longitude, d.latitude])[0])
+        .attr("cy", d => projection([d.longitude, d.latitude])[1])
+        .attr("r", 5)
+        .attr("fill", d => colorMap[d.type])
+        .attr("stroke", "#fdf8f8ff")
+        .attr("stroke-width", 0.5)
+        .append("title")
+        .text(d => `${d.type}: ${d.size.toFixed(2)} km`);
+
+    // Legend
+    let legendG = g.select("#section6Legend");
+    if (legendG.empty()) {
+        legendG = g.append("g")
+            .attr("class", "legend")
+            .attr("id", "section6Legend")
+            .attr("transform", "translate(20, 20)");
+    } else {
+        legendG.selectAll("*").remove();
     }
 
-    d3.select("#marePanelTitle")
-        .text(key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
+    // Determine which types exist
+    const existingTypes = new Set(allCratersToPlot.map(d => d.type));
+    createLegendFixed("#section6Legend", existingTypes, colorMap);
+}
 
-    const stats = data.summ_stat;
+function createLegendFixed(containerSelector, existingTypes, colorMap) {
+    const allTypes = ["minSize", "maxSize", "minDepth", "maxDepth"];
+    const legendG = d3.select(containerSelector);
+    const itemHeight = 20;
 
-    d3.select("#mareStatsContainer").html(`
-        <p><strong>Number of Craters:</strong> ${stats.num_craters}</p>
-        <p><strong>Min Diameter:</strong> ${(stats.min_size).toFixed(3)} m</p>
-        <p><strong>Max Diameter:</strong> ${(stats.max_size).toFixed(3)} m</p>
-        <p><strong>Mean Diameter:</strong> ${(stats.mean_size).toFixed(3)} m</p>
-        <p><strong>Median Diameter:</strong> ${(stats.med_size).toFixed(3)} m</p>
-    `);
+    const legendItems = legendG.selectAll(".legend-item")
+        .data(allTypes)
+        .enter()
+        .append("g")
+        .attr("class", "legend-item")
+        .attr("transform", (d,i) => `translate(0, ${i * itemHeight})`);
 
-    drawHistogram(data.sizes);
-    drawPanelCraterInfo(data.plot_craters);
+    legendItems.append("rect")
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", d => existingTypes.has(d) ? colorMap[d] : "#555")
+        .attr("opacity", d => existingTypes.has(d) ? 1 : 0.3);
 
-    drawPanelMarkersForMare(key, t);
+    legendItems.append("text")
+        .attr("x", 20)
+        .attr("y", 12)
+        .text(d => {
+            switch(d){
+                case "minSize": return "Smallest Crater";
+                case "maxSize": return "Largest Crater";
+                case "minDepth": return "Shallowest Crater";
+                case "maxDepth": return "Deepest Crater";
+            }
+        })
+        .attr("font-size", "12px")
+        .attr("fill", "#fff");
 }
 
 // =======================
 // Histogram
 // =======================
-function drawHistogram(values) {
-    const cleaned = values.map(Number).filter(v => !isNaN(v));
 
-    const svg = d3.select("#mareSizeHistogram");
-    if (svg.empty()) return;
-    
+function drawHistogram(svgSelector, dataArray, minVal, maxVal) {
+    const svg = d3.select(svgSelector);
     svg.selectAll("*").remove();
 
-    // Get the container's dimensions, accounting for padding (20px on each side = 40px total)
-    const container = document.querySelector('.histogram-container');
-    const containerWidth = container ? container.clientWidth - 40 : 400; // subtract padding
-    const width = Math.max(280, containerWidth);
-    const height = Math.min(350, width * 0.75); // Constrained responsive height
-    
-    // Set SVG dimensions dynamically
+    const width = 300;  // Or whatever fits your CSS
+    const height = 200;
     svg.attr("width", width).attr("height", height);
 
-    const margin = { top: 20, right: 20, bottom: 40, left: 50 };
-    const w = width - margin.left - margin.right;
-    const h = height - margin.top - margin.bottom;
+    const margin = {top: 20, right: 20, bottom: 30, left: 30};
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    const x = d3.scaleLinear()
+        .domain([0, d3.max(dataArray)])
+        .range([0, innerWidth]);
+
+    const bins = d3.bin().domain(x.domain()).thresholds(20)(dataArray);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(bins, d => d.length)])
+        .range([innerHeight, 0]);
 
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-    if (cleaned.length === 0) {
-        g.append("text")
-            .attr("x", w / 2)
-            .attr("y", h / 2)
-            .attr("text-anchor", "middle")
-            .attr("fill", "#999")
-            .style("font-size", "14px")
-            .text("No data");
-        return;
-    }
-
-    const x = d3.scaleLinear().domain(d3.extent(cleaned)).nice().range([0, w]);
-
-    const binCount = Math.max(6, Math.ceil(Math.sqrt(cleaned.length)));
-    const bins = d3.bin().domain(x.domain()).thresholds(binCount)(cleaned);
-
-    const y = d3.scaleLinear().domain([0, d3.max(bins, d => d.length)]).nice().range([h, 0]);
 
     g.selectAll("rect")
         .data(bins)
         .enter()
         .append("rect")
-        .attr("x", d => x(d.x0) + 1)
+        .attr("x", d => x(d.x0))
         .attr("y", d => y(d.length))
         .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
-        .attr("height", d => h - y(d.length))
-        .attr("fill", "#ffaa00");
+        .attr("height", d => innerHeight - y(d.length))
+        .attr("fill", "#888");
 
-    // X-axis
-    g.append("g")
-        .attr("transform", `translate(0, ${h})`)
-        .call(d3.axisBottom(x).ticks(6))
-        .selectAll("text")
-        .style("font-size", "11px")
-        .style("fill", "#ccc")
-        .attr("dy", "8px");
+    g.append("g").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x).ticks(5));
+    g.append("g").call(d3.axisLeft(y).ticks(4));
 
-    // Y-axis
-    g.append("g")
-        .call(d3.axisLeft(y).ticks(5))
-        .selectAll("text")
-        .style("font-size", "11px")
-        .style("fill", "#ccc");
-
-    // Axis lines
-    g.selectAll(".domain, .tick line")
-        .style("stroke", "#666");
-
-    // X-axis label
-    svg.append("text")
-        .attr("x", width / 2)
-        .attr("y", height - 8)
-        .attr("text-anchor", "middle")
-        .style("font-size", "12px")
-        .style("fill", "#999")
-        .text("Diameter (m)");
 }
+
+
+
 
 // =======================
 // Crater info

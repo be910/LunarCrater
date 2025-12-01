@@ -122,7 +122,7 @@
         <div class="text-panel">
             <h2>Exploring Crater Characteristics</h2>
             <p>
-                The timeline slider below allows you to explore crater distributions
+                The timeline slider to the right allows you to explore crater distributions
                 by diameter size across the lunar surface.
             </p>
             <p>
@@ -130,7 +130,7 @@
                 to see their specific crater statistics.
             </p>
             <ul>
-                <li><span class="diameter-indicator">●</span> <strong>Crater diameter</strong> - size in kilometers</li>
+                <li><span class="diameter-indicator">●</span> <strong>Crater diameter</strong> - size in meters</li>
             </ul>
         </div>
 
@@ -158,7 +158,7 @@
             <h2>Mare-Specific Analysis</h2>
             <p>
                 Each mare region has its own geological history.
-                Click on a mare to reveal its timeline and statistics.
+                Click on a mare to reveal its most extreme craters and statistics.
             </p>
             <p class="highlight-note">
                 👉 Click on any mare region on the map to see detailed crater evolution data
@@ -168,15 +168,15 @@
             <div id="mareStatsPanel">
                 <h3 id="marePanelTitle">Select a Mare</h3>
 
-                <div id="mareTimestepSlider" style="margin-bottom: 20px;">
+                <!-- <div id="mareTimestepSlider" style="margin-bottom: 20px;">
                     <div class="slider-wrapper">
                         <div class="timestep-display" id="mareTimestepValue">0</div>
                         <input type="range" id="mareTimestepSliderInput" min="0" max="9" value="0" step="1">
                     </div>
-                </div>
+                </div> -->
                 
                 <!-- Color Legend -->
-                <div class="legend">
+                <!-- <div class="legend">
                     <div class="legend-item">
                         <div class="legend-color" style="background: #00ffbf;"></div>
                         <span>Smallest Crater</span>
@@ -185,7 +185,7 @@
                         <div class="legend-color" style="background: #ff4d4d;"></div>
                         <span>Largest Crater</span>
                     </div>
-                </div>
+                </div> -->
                 
                 <div class="stats-layout">
                     <!-- Left: Summary statistics -->
@@ -195,6 +195,8 @@
                     <div class="histogram-container">
                         <div class="histogram-title">Crater Size Distribution</div>
                         <svg id="mareSizeHistogram"></svg>
+                        <div class="histogram-title">Crater Depth Distribution</div>
+                        <svg id="mareDepthHistogram"></svg>
                     </div>
                 </div>
                 
