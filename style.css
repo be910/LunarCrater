@@ -517,3 +517,9 @@ body {
     #mareStatsPanel { right: 10px; left: 10px; bottom: 10px; top: auto; padding: 16px; }
 }
 
+.histogram-container {
+    display: flex;
+    flex-direction: column;   /* Keep elements stacked vertically */
+    align-items: center;      /* Centers SVGs (and titles) horizontally */
+    justify-content: center;  /* Optional: vertical centering */
+}

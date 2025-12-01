@@ -732,16 +732,15 @@ function createLegendFixed(containerSelector, existingTypes, colorMap) {
 // =======================
 // Histogram
 // =======================
-
 function drawHistogram(svgSelector, dataArray, minVal, maxVal) {
     const svg = d3.select(svgSelector);
     svg.selectAll("*").remove();
 
-    const width = 300;  // Or whatever fits your CSS
+    const width = 300;
     const height = 200;
     svg.attr("width", width).attr("height", height);
 
-    const margin = {top: 20, right: 20, bottom: 30, left: 30};
+    const margin = {top: 20, right: 20, bottom: 30, left: 40};
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -749,13 +748,16 @@ function drawHistogram(svgSelector, dataArray, minVal, maxVal) {
         .domain([0, d3.max(dataArray)])
         .range([0, innerWidth]);
 
-    const bins = d3.bin().domain(x.domain()).thresholds(20)(dataArray);
+    const bins = d3.bin()
+        .domain(x.domain())
+        .thresholds(20)(dataArray);
 
     const y = d3.scaleLinear()
         .domain([0, d3.max(bins, d => d.length)])
         .range([innerHeight, 0]);
 
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
     g.selectAll("rect")
         .data(bins)
@@ -767,13 +769,19 @@ function drawHistogram(svgSelector, dataArray, minVal, maxVal) {
         .attr("height", d => innerHeight - y(d.length))
         .attr("fill", "#888");
 
-    g.append("g").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x).ticks(5));
-    g.append("g").call(d3.axisLeft(y).ticks(4));
+    // Bottom X Axis
+    g.append("g")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(x).ticks(5));
 
+    // Left Y Axis with better readable formatting
+    g.append("g")
+        .call(
+            d3.axisLeft(y)
+              .ticks(4)
+              .tickFormat(d3.format(","))  // <<< Fix large numbers here
+        );
 }
-
-
-
 
 // =======================
 // Crater info
