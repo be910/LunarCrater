@@ -168,15 +168,15 @@
             <div id="mareStatsPanel">
                 <h3 id="marePanelTitle">Select a Mare</h3>
 
-                <div id="mareTimestepSlider" style="margin-bottom: 20px;">
+                <!-- <div id="mareTimestepSlider" style="margin-bottom: 20px;">
                     <div class="slider-wrapper">
                         <div class="timestep-display" id="mareTimestepValue">0</div>
                         <input type="range" id="mareTimestepSliderInput" min="0" max="9" value="0" step="1">
                     </div>
-                </div>
+                </div> -->
                 
                 <!-- Color Legend -->
-                <div class="legend">
+                <!-- <div class="legend">
                     <div class="legend-item">
                         <div class="legend-color" style="background: #00ffbf;"></div>
                         <span>Smallest Crater</span>
@@ -185,7 +185,7 @@
                         <div class="legend-color" style="background: #ff4d4d;"></div>
                         <span>Largest Crater</span>
                     </div>
-                </div>
+                </div> -->
                 
                 <div class="stats-layout">
                     <!-- Left: Summary statistics -->
@@ -195,6 +195,8 @@
                     <div class="histogram-container">
                         <div class="histogram-title">Crater Size Distribution</div>
                         <svg id="mareSizeHistogram"></svg>
+                        <div class="histogram-title">Crater Depth Distribution</div>
+                        <svg id="mareDepthHistogram"></svg>
                     </div>
                 </div>
                 
