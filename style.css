@@ -197,11 +197,39 @@ body {
 /* ============================
    Crater Timeline (Section 5)
 ============================ */
-.survived-indicator { color: #00ffbf; font-size: 1.4em; vertical-align: middle; }
-.erased-indicator { color: #ff4d4d; font-size: 1.4em; vertical-align: middle; }
+/* Diameter indicator dot matching timeline crater style */
+.diameter-indicator {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-color: rgba(255,165,0,0.6); 
+    border: 1px solid #fff;                 
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
 
-#sliderContainer { text-align: center; margin: 20px 0; width: 100%; }
-.slider-wrapper { display: flex; align-items: center; justify-content: center; gap: 16px; }
+/* Slider container and alignment */
+#sliderContainer {
+    text-align: center;
+    margin: 20px 0;
+    width: 100%;
+}
+
+#sliderContainer label {
+    font-size: 1.6em; /* increase as needed */
+    font-weight: bold;
+    color: #ffff00;   /* optional: match slider display color */
+}
+
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+/* Slider track */
 #timestepSlider {
     flex: 1;
     max-width: 600px;
@@ -210,6 +238,8 @@ body {
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* Slider thumb */
 #timestepSlider::-webkit-slider-thumb,
 #timestepSlider::-moz-range-thumb {
     width: 20px;
@@ -220,9 +250,13 @@ body {
     box-shadow: 0 0 6px rgba(255,255,0,0.7);
     transition: transform 0.2s;
 }
-#timestepSlider:hover::-webkit-slider-thumb,
-#timestepSlider:hover::-moz-range-thumb { transform: scale(1.2); }
 
+#timestepSlider:hover::-webkit-slider-thumb,
+#timestepSlider:hover::-moz-range-thumb {
+    transform: scale(1.2);
+}
+
+/* Display the current slider value */
 .timestep-display {
     color: #ffff00;
     font-size: 1.8em;

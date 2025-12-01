@@ -429,135 +429,125 @@ function hideTooltip() {
 // =======================
 // Load Craters
 // =======================
-function loadCraters() {
-    Promise.all([
-        d3.json("erased_craters_mare.geojson"),
-        d3.json("survived_craters_mare.geojson")
-    ]).then(([erasedData, survivedData]) => {
-        erasedCraters = erasedData.features;
-        survivedCraters = survivedData.features;
-        console.log("Erased craters:", erasedCraters.length, "Survived craters:", survivedCraters.length);
+const diameterBins = [0, 1, 2, 3, 5, 6, 7, 8, 9, 10];
 
-        computeCratersByMare();
-    }).catch(err => console.error(err));
+function updateTimeline(binIndex) {
+    const instance = svgInstances['timeline'];
+    if (!instance) return;
+
+    const { g, projection } = instance;
+    const craterGroup = g.select(".craters");
+    craterGroup.selectAll("*").remove();
+
+    if (binIndex < 0 || binIndex >= diameterBins.length) return;
+    let minD = diameterBins[binIndex];
+    let maxD;
+
+    if (binIndex === diameterBins.length - 1) {
+        maxD = Infinity;
+    } else {
+        maxD = diameterBins[binIndex + 1];
+    }
+
+    const filtered = allCraters.filter(c => c.size >= minD && c.size < maxD);
+
+    // Plot craters
+    craterGroup.selectAll("circle")
+        .data(filtered)
+        .enter()
+        .append("circle")
+        .attr("cx", d => projection([d.longitude, d.latitude])[0])
+        .attr("cy", d => projection([d.longitude, d.latitude])[1])
+        .attr("r", d => Math.max(1, Math.log10(d.size + 2) * 4))
+        // .attr("r", d => Math.max(1, Math.sqrt(d.size)))
+        .attr("fill", "rgba(66, 67, 80, 0.6)")
+        .attr("stroke", "#fdf8f8ff")
+        .attr("stroke-width", 0.5)
+        .append("title")
+        .text(d => `${d.size.toFixed(2)} m`);
+
+    console.log(`Plotted ${filtered.length} craters in bin ${binIndex} (${minD}–${maxD === Infinity ? '∞' : maxD} m)`);
 }
 
+
+function loadCraters() {
+    d3.json("filtered_craters.json").then(data => {
+        allCraters = data; // all craters already filtered with mare names
+        console.log("Loaded craters:", allCraters.length);
+
+        // Initialize Section 5 timeline with all craters
+        updateTimeline(+document.getElementById("timestepSlider").value);
+    }).catch(err => console.error("Error loading crater data:", err));
+}
+
+
+
 // =======================
-// Compute crater data by mare
+// Prepare crater data by mare for diameter filtering
 // =======================
 function computeCratersByMare() {
-    // Initialize objects for each mare
+    // Initialize survivedByMare (we're repurposing it for diameter filtering)
     marePolygons.forEach(mare => {
         const key = mare.properties.Mare.toLowerCase().replace(/\s+/g, "_");
-        survivedByMare[key] = {};
-        erasedByMare[key] = {};
+        survivedByMare[key] = [];
     });
-    
-    // Process survived craters
-    survivedCraters.forEach(crater => {
-        const mareKey = crater.properties.Mare?.toLowerCase().replace(/\s+/g, "_");
+
+    // Populate survivedByMare with crater info from allCraters
+    allCraters.forEach(crater => {
+        const mareKey = crater.polygon_name?.toLowerCase().replace(/\s+/g, "_");
         if (mareKey && survivedByMare[mareKey] !== undefined) {
-            const timestep = crater.properties.TimeStepCreated ?? 0;
-            if (!survivedByMare[mareKey][timestep]) {
-                survivedByMare[mareKey][timestep] = { timestep, count: 0 };
-            }
-            survivedByMare[mareKey][timestep].count++;
+            survivedByMare[mareKey].push({
+                latitude: crater.latitude,
+                longitude: crater.longitude,
+                diameter: crater.size
+            });
         }
     });
-    
-    // Process erased craters
-    erasedCraters.forEach(crater => {
-        const mareKey = crater.properties.Mare?.toLowerCase().replace(/\s+/g, "_");
-        if (mareKey && erasedByMare[mareKey] !== undefined) {
-            const timestep = crater.properties.ErasedTimeStep;
-            if (timestep != null) {
-                if (!erasedByMare[mareKey][timestep]) {
-                    erasedByMare[mareKey][timestep] = { timestep, count: 0 };
-                }
-                erasedByMare[mareKey][timestep].count++;
-            }
-        }
-    });
-    
-    // Convert to sorted arrays and fill missing timesteps with 0
-    Object.keys(survivedByMare).forEach(key => {
-        const survivedArr = Object.values(survivedByMare[key])
-            .sort((a, b) => a.timestep - b.timestep);
 
-        const erasedArr = Object.values(erasedByMare[key])
-            .sort((a, b) => a.timestep - b.timestep);
-
-        survivedByMare[key] = survivedArr;
-        erasedByMare[key] = erasedArr;
-
-        // Find max timestep for this mare
-        const maxTimestep = Math.max(
-            survivedArr.length > 0 ? survivedArr[survivedArr.length - 1].timestep : 0,
-            erasedArr.length > 0 ? erasedArr[erasedArr.length - 1].timestep : 0
-        );
-        
-        // Fill in missing timesteps with cumulative counts
-        const survivedFilled = [];
-        const erasedFilled = [];
-        let survivedCount = 0;
-        let erasedCount = 0;
-        
-        for (let t = 0; t <= maxTimestep; t++) {
-            const survivedAtT = survivedArr.find(d => d.timestep === t);
-            const erasedAtT = erasedArr.find(d => d.timestep === t);
-            
-            if (survivedAtT) survivedCount += survivedAtT.count;
-            if (erasedAtT) erasedCount += erasedAtT.count;
-            
-            survivedFilled.push({ timestep: t, count: survivedCount });
-            erasedFilled.push({ timestep: t, count: erasedCount });
-        }
-        
-        survivedByMare[key] = survivedFilled;
-        erasedByMare[key] = erasedFilled;
-    });
-    
-    console.log("Crater data computed by mare:", Object.keys(survivedByMare));
+    console.log("Prepared survivedByMare for diameter filtering:", Object.keys(survivedByMare));
 }
 
 // =======================
 // Slider (0–9, above visualization)
 // =======================
 function setupSlider() {
-    // Section 5 slider
+    // Section 5 slider: diameter bins
     const slider = document.getElementById("timestepSlider");
     const label = document.getElementById("timestepValue");
 
     if (slider && label) {
         slider.min = 0;
-        slider.max = 9;
+        slider.max = diameterBins.length - 1;
         slider.value = 0;
 
         let sliderTimeout;
-        
         slider.addEventListener("input", () => {
             clearTimeout(sliderTimeout);
             sliderTimeout = setTimeout(() => {
-                const t = +slider.value;
-                label.textContent = t;
+                const binIndex = +slider.value;
 
-                // Update Section 6 if mare is selected
+                // Update label to show actual meter range
+                const minD = diameterBins[binIndex];
+                const maxD = diameterBins[binIndex + 1];
+                label.textContent = maxD ? `${minD}–${maxD} m` : `> ${minD} m`;
+
+                // Section 5: update timeline visualization
+                updateTimeline(binIndex);
+
+                // Section 6: keep timestep behavior unchanged
                 const panel = d3.select("#mareStatsPanel");
                 const mareKey = panel.attr("data-current-mare");
                 if (mareKey && panel.style("display") !== "none") {
-                    updateMareDetailPanel(mareKey, t);
+                    const mareSlider = document.getElementById("mareTimestepSliderInput");
+                    const mareLabel = document.getElementById("mareTimestepValue");
+                    if (mareSlider) mareSlider.value = mareSlider.value; // leave unchanged
+                    if (mareLabel) mareLabel.textContent = mareSlider.value; // leave unchanged
                 }
-                
-                // Sync Section 6 slider if it exists
-                const mareSlider = document.getElementById("mareTimestepSliderInput");
-                const mareLabel = document.getElementById("mareTimestepValue");
-                if (mareSlider) mareSlider.value = t;
-                if (mareLabel) mareLabel.textContent = t;
             }, 50);
         });
     }
 
-    // Section 6 slider (independent)
+    // Section 6 slider (independent, timestep)
     const mareSlider = document.getElementById("mareTimestepSliderInput");
     const mareLabel = document.getElementById("mareTimestepValue");
 
@@ -567,14 +557,13 @@ function setupSlider() {
         mareSlider.value = 0;
 
         let sliderTimeout;
-        
         mareSlider.addEventListener("input", () => {
             clearTimeout(sliderTimeout);
             sliderTimeout = setTimeout(() => {
                 const t = +mareSlider.value;
                 mareLabel.textContent = t;
 
-                // Update mare stats panel
+                // Update mare stats panel (still timestep)
                 const panel = d3.select("#mareStatsPanel");
                 const mareKey = panel.attr("data-current-mare");
                 if (mareKey) {
@@ -585,11 +574,12 @@ function setupSlider() {
     }
 }
 
+
 // =======================
 // Load mare stats
 // =======================
 function loadMareStats() {
-    return d3.json("json/output.json").then(data => {
+    return d3.json("json/output_new.json").then(data => {
         mareStats = data;
     });
 }

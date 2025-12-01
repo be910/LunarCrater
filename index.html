@@ -118,36 +118,36 @@
 
     <!-- Section 5: Crater Timeline Introduction -->
     <section class="fullpage-section split-section" data-section="5">
-        <div class="section-content split">
-            <div class="text-panel">
-                <h2>Exploring Crater Evolution</h2>
-                <p>
-                    The timeline slider below allows you to explore how craters 
-                    appeared and disappeared across different geological periods.
-                </p>
-                <p>
-                    In the next section, you can click on individual mare regions
-                    to see their specific crater evolution timelines.
-                </p>
-                <ul>
-                    <li><span class="survived-indicator">●</span> <strong>Survived craters</strong> - remain visible today</li>
-                    <li><span class="erased-indicator">●</span> <strong>Erased craters</strong> - buried by later activity</li>
-                </ul>
-            </div>
-
-            <div class="viz-panel">
-                <div id="sliderContainer">
-                    <label for="timestepSlider">Geological Timeline:</label>
-                    <div class="slider-wrapper">
-                        <input type="range" id="timestepSlider" min="0" max="9" value="0" step="1">
-                        <span id="timestepValue" class="timestep-display">0</span>
-                    </div>
-                </div>
-
-                <div id="timelineVisualization"></div>
-            </div>
+    <div class="section-content split">
+        <div class="text-panel">
+            <h2>Exploring Crater Characteristics</h2>
+            <p>
+                The timeline slider below allows you to explore crater distributions
+                by diameter size across the lunar surface.
+            </p>
+            <p>
+                In the next section, you can click on individual mare regions
+                to see their specific crater statistics.
+            </p>
+            <ul>
+                <li><span class="diameter-indicator">●</span> <strong>Crater diameter</strong> - size in kilometers</li>
+            </ul>
         </div>
-    </section>
+
+        <div class="viz-panel">
+            <div id="sliderContainer">
+                <label for="timestepSlider">Diameter Scale (km):</label>
+                <div class="slider-wrapper">
+                    <input type="range" id="timestepSlider" min="0" max="9" value="0" step="1">
+                    <span id="timestepValue" class="timestep-display">≤ 1 m</span>
+                </div>
+            </div>
+
+            <div id="timelineVisualization"></div>
+        </div>
+    </div>
+</section>
+
 
 <!-- Section 6: Mare Statistics -->
 <section class="fullpage-section split-section" data-section="6">
