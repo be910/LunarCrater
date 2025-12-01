@@ -611,9 +611,11 @@ function showMareStatsPanel(mareName, displayName) {
             avgSize: d3.mean(allSizes).toFixed(2),
             minSize: d3.min(allSizes).toFixed(2),
             maxSize: d3.max(allSizes).toFixed(2),
+            medSize: d3.median(allSizes).toFixed(2),
             avgDepth: d3.mean(allDepths).toFixed(2),
             minDepth: d3.min(allDepths).toFixed(2),
-            maxDepth: d3.max(allDepths).toFixed(2)
+            maxDepth: d3.max(allDepths).toFixed(2),
+            medDepth: d3.median(allDepths).toFixed(2)
         };
 
         // Populate summary statistics panel
@@ -622,8 +624,8 @@ function showMareStatsPanel(mareName, displayName) {
         // statsContainer.append("h4").text(`Statistics for ${mareName}`);
         statsContainer.append("p").html(`
             <strong>Number of Craters:</strong> ${stats.numCraters}<br>
-            <strong>Size (m):</strong> Avg ${stats.avgSize}, Min ${stats.minSize}, Max ${stats.maxSize}<br>
-            <strong>Depth (m):</strong> Avg ${stats.avgDepth}, Min ${stats.minDepth}, Max ${stats.maxDepth}
+            <strong>Size (m):</strong> Avg ${stats.avgSize}, Med ${stats.medSize}, Min ${stats.minSize}, Max ${stats.maxSize}<br>
+            <strong>Depth (m):</strong> Avg ${stats.avgDepth}, Med ${stats.medDepth}, Min ${stats.minDepth}, Max ${stats.maxDepth}
         `);
 
         // Draw size histogram
