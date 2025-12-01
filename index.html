@@ -7,6 +7,7 @@
 
     <!-- D3 + Scrollama -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
     <script src="https://unpkg.com/scrollama"></script>
     <script src="main.js" type="module"></script>
     <link rel="stylesheet" href="style.css">
@@ -14,84 +15,211 @@
 
 <body>
 
-    <!-- Main title -->
-    <header style="text-align:center; padding: 40px 0;">
-        <h1>Moonscapes in Motion: Tracking Crater Evolution Across Lunar Seas</h1>
-        <div class="subtitle" style="text-align:center; font-size:1.2rem; margin-top:10px;">
-            Visualizing crater formation and evolution across the Moon’s mare regions
+    <!-- Page Indicator -->
+    <div class="page-indicator">
+        <span id="currentPage">1</span> / <span id="totalPages">7</span>
+    </div>
+
+    <!-- Section 1: Title Page -->
+    <section class="fullpage-section title-section" data-section="1">
+        <div class="section-content centered">
+            <h1>Moonscapes in Motion</h1>
+            <h2>Tracking Crater Evolution Across Lunar Seas</h2>
+            <p class="subtitle">Visualizing crater formation and evolution across the Moon's mare regions</p>
+            <div class="scroll-hint">↓ Scroll to begin ↓</div>
         </div>
-    </header>
+    </section>
 
-    <!-- Scrollytelling layout -->
-    <div class="scrolly-container">
+    <!-- Section 2: Why the Moon? -->
+    <section class="fullpage-section" data-section="2">
+        <div class="section-content centered">
+            <h2>Why the Moon?</h2>
+            <p>
+                The Moon is the time capsule of the early Solar System. 
+                With no atmosphere, no weather, and no plate tectonics, 
+                the Moon's surface preserves billions of years of impact history 
+                almost untouched.
+            </p>
+            <p>
+                By reading the Moon's surface like an ancient archive, 
+                scientists can reconstruct the timeline of our Solar System's evolution through
+                the most violent meteor showers and volcanic activity.
+            </p>
+            <p>
+                The Moon's surface is divided into two main types of terrain:
+                the highlands and the <strong>maria</strong> — the darker basaltic plains 
+                we often see from Earth.
+            </p>
+        </div>
+    </section>
 
-        <!-- LEFT: Scroll text -->
-        <div class="scrolly-text">
-            <section class="step" data-step="1">
-                <h2>Why the Moon? </h2>
-                <p>
-                    The moon is the time capsule of the early Solar System. 
-                    With no atmosphere, no weather, and no plate tectonics, 
-                    the Moon's surface preserves billions of years of impact history 
-                    almost untouched. By reading the Moon's surface like an ancient archive, 
-                    scientists can reconstruct the timeline of our Solar System's evolve through
-                    the most violent meteor showers and volcanic activity.
-                </p>
-                 <p>
-                    The moon's surface is divided into two main types of terrain:
-                    the highlands and the marias. In this visualization, we focus on the
-                    marias, the darker basaltic plains we often see from Earth.
-            </section>
-
-            <section class="step" data-step="2">
+    <!-- Section 3: What are Mare Regions? -->
+    <section class="fullpage-section split-section" data-section="3">
+        <div class="section-content split">
+            <div class="text-panel">
                 <h2>What are Mare Regions?</h2>
                 <p>
-                    Mares are vast, dark plains formed when deep magma flooded giant impact 
-                    basins billions of years ago. These plains are younger and smoother than 
-                    the bright highlands, making them ideal for studying how craters accumulate! 
+                    <em>Maria</em> (singular: mare) are vast, dark plains formed when deep magma 
+                    flooded giant impact basins billions of years ago.
                 </p>
                 <p>
-                    In this visualization, we focus on several key mare regions:
-                    Mare Imbrium, Mare Serenitatis, Mare Tranquillitatis, and Oceanus Procellarum.
+                    These plains are younger and smoother than the bright highlands, 
+                    making them ideal for studying how craters accumulate.
                 </p>
-            </section>
+                <p><strong> ⭐ Key Mare Regions:</strong></p>
+                <ul>
+                    <li><strong>Mare Imbrium</strong> - Formed by one of the most powerful impacts in the Solar System.</li>
+                    <li><strong>Mare Serenitatis</strong> - Surrounded by dramatic mountain rings.</li>
+                    <li><strong>Mare Tranquillitatis</strong> - Apollo 11 landing site.</li>
+                    <li><strong>Oceanus Procellarum</strong> - The largest mare.</li>
+                    <li><strong>Mare Crisium, Fecunditatis, Vaporum</strong> - Lesser-known volcanic plains.</li>
+                </ul>
+            </div>
+            <div class="viz-panel">
+                <div id="mareMapVisualization"></div>
+            </div>
+        </div>
+    </section>
 
-            <section class="step" data-step="3">
-                <h2>What are craters?</h2>
+    <!-- Section 4: What are Craters? -->
+    <section class="fullpage-section split-section" data-section="4">
+        <div class="section-content split">
+            <div class="text-panel">
+                <h2>What are Craters?</h2>
                 <p>
-                    Craters are circular depressions on the Moon's surface caused by the collision 
-                    of meteoroids, asteroids, or comets. The energy released during these impacts 
-                    excavates rock and ejects material, forming a bowl-shaped cavity. Larger impacts 
-                    can create multi-ring basins, while smaller ones leave simple, round craters.
+                    Craters are circular depressions caused by the collision 
+                    of meteoroids, asteroids, or comets with the lunar surface.
                 </p>
                 <p>
-                    By studying crater's evolution over time, scientists can reconstruct the history 
-                    of impacts across the Solar System.
+                    The energy released excavates rock and ejects material, 
+                    forming bowl-shaped cavities. Larger impacts create multi-ring basins, 
+                    while smaller ones leave simple, round craters.
                 </p>
-                
-            </section>
+                <p><strong>The Formation Process:</strong></p>
+                <ul>
+                    <li><strong>Impact</strong> - High-velocity collision releases enormous energy</li>
+                    <li><strong>Excavation</strong> - Shockwave expands, ejecting material outward</li>
+                    <li><strong>Crater Formation</strong> - Bowl-shaped depression forms with raised rim</li>
+                    <li><strong>Ejecta Dispersal</strong> - Debris scatters across surrounding surface</li>
+                </ul>
 
-            <section class="step" data-step="4">
-                <h2>Time Evolution</h2>
-                <p>
-                    The slider will eventually let you explore crater evolution step-by-step.
-                </p>
-
-                <div id="sliderContainer">
-                    <label for="timestepSlider">Timestep:</label>
-                    <input type="range" id="timestepSlider" min="0" value="0" step="1">
-                    <span id="timestepValue">0</span>
+                <div id="craterAnimationControls" class="formation-controls">
+                    <button id="playCraterAnimation" class="formation-button">
+                        ▶ Watch Animation Again
+                    </button>
                 </div>
-            </section>
+            </div>
+
+            <div class="viz-panel">
+                <div id="craterVizVisualization"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Crater Timeline Introduction -->
+    <section class="fullpage-section split-section" data-section="5">
+        <div class="section-content split">
+            <div class="text-panel">
+                <h2>Exploring Crater Evolution</h2>
+                <p>
+                    The timeline slider below allows you to explore how craters 
+                    appeared and disappeared across different geological periods.
+                </p>
+                <p>
+                    In the next section, you can click on individual mare regions
+                    to see their specific crater evolution timelines.
+                </p>
+                <ul>
+                    <li><span class="survived-indicator">●</span> <strong>Survived craters</strong> - remain visible today</li>
+                    <li><span class="erased-indicator">●</span> <strong>Erased craters</strong> - buried by later activity</li>
+                </ul>
+            </div>
+
+            <div class="viz-panel">
+                <div id="sliderContainer">
+                    <label for="timestepSlider">Geological Timeline:</label>
+                    <div class="slider-wrapper">
+                        <input type="range" id="timestepSlider" min="0" max="9" value="0" step="1">
+                        <span id="timestepValue" class="timestep-display">0</span>
+                    </div>
+                </div>
+
+                <div id="timelineVisualization"></div>
+            </div>
+        </div>
+    </section>
+
+<!-- Section 6: Mare Statistics -->
+<section class="fullpage-section split-section" data-section="6">
+    <div class="section-content split">
+        
+        <!-- Text Panel -->
+        <div class="text-panel">
+            <h2>Mare-Specific Analysis</h2>
+            <p>
+                Each mare region has its own geological history.
+                Click on a mare to reveal its timeline and statistics.
+            </p>
+            <p class="highlight-note">
+                👉 Click on any mare region on the map to see detailed crater evolution data
+            </p>
+
+            <!-- Mare Stats Panel -->
+            <div id="mareStatsPanel">
+                <h3 id="marePanelTitle">Select a Mare</h3>
+
+                <div id="mareTimestepSlider" style="margin-bottom: 20px;">
+                    <div class="slider-wrapper">
+                        <div class="timestep-display" id="mareTimestepValue">0</div>
+                        <input type="range" id="mareTimestepSliderInput" min="0" max="9" value="0" step="1">
+                    </div>
+                </div>
+                
+                <!-- Color Legend -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #00ffbf;"></div>
+                        <span>Smallest Crater</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff4d4d;"></div>
+                        <span>Largest Crater</span>
+                    </div>
+                </div>
+                
+                <div class="stats-layout">
+                    <!-- Left: Summary statistics -->
+                    <div id="mareStatsContainer"></div>
+                    
+                    <!-- Right: Histogram -->
+                    <div class="histogram-container">
+                        <div class="histogram-title">Crater Size Distribution</div>
+                        <svg id="mareSizeHistogram"></svg>
+                    </div>
+                </div>
+                
+                <!-- Bottom: Smallest / Largest crater info -->
+                <div id="panelCraters"></div>
+            </div>
         </div>
 
-        <!-- RIGHT: Moon visualization -->
-        <div class="graphic">
-            <div id="visualization"></div>
-            <div id="legendContainer"></div>
+        <!-- Visualization Panel -->
+        <div class="viz-panel">
+            <div id="mareStatsVisualization"></div>
         </div>
-
     </div>
+</section>
+
+    <!-- Section 7: Conclusion -->
+    <section class="fullpage-section" data-section="7">
+        <div class="section-content centered">
+            <h2>Continue Exploring</h2>
+            <p>
+                The Moon's surface tells a story spanning billions of years—
+                each crater a chapter in the history of our Solar System.
+            </p>
+        </div>
+    </section>
 
 </body>
 </html>
