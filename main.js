@@ -688,10 +688,13 @@ function showMareStatsPanel(mareName, displayName) {
         // Populate summary statistics panel
         const statsContainer = d3.select("#mareStatsContainer");
         statsContainer.html(""); // clear previous content
-        // statsContainer.append("h4").text(`Statistics for ${mareName}`);
         statsContainer.append("p").html(`
-            <strong>Number of Craters:</strong> ${stats.numCraters}<br>
-            <strong>Size (m):</strong> Avg ${stats.avgSize}, Med ${stats.medSize}, Min ${stats.minSize}, Max ${stats.maxSize}<br>
+            <strong>Number of Craters:</strong> ${stats.numCraters}
+        `);
+        statsContainer.append("p").html(`
+            <strong>Size (m):</strong> Avg ${stats.avgSize}, Med ${stats.medSize}, Min ${stats.minSize}, Max ${stats.maxSize}
+        `);
+        statsContainer.append("p").html(`
             <strong>Depth (m):</strong> Avg ${stats.avgDepth}, Med ${stats.medDepth}, Min ${stats.minDepth}, Max ${stats.maxDepth}
         `);
 
@@ -703,7 +706,7 @@ function showMareStatsPanel(mareName, displayName) {
             tempData.size_stats.max_size_crater,
             tempData.depth_stats.min_depth_crater,
             tempData.depth_stats.max_depth_crater);
-    });
+        });
 }
 
 function plotCraterSection6(minSize, maxSize, minDepth, maxDepth) {
