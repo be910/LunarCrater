@@ -834,7 +834,7 @@ function drawHistogram(svgSelector, dataArray, minVal, maxVal) {
         .attr("y", d => y(d.length))
         .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1))
         .attr("height", d => innerHeight - y(d.length))
-        .attr("fill", "#888");
+        .attr("fill", "#ecc845ff");
 
     // Bottom X Axis
     g.append("g")
