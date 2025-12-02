@@ -384,6 +384,7 @@ body {
 
 #mareStatsContainer p {
     margin: 1px 0;  /*  adjust the number to increase/decrease spacing */
+    font-size: 100%;
 }
 
 .stat-item {
@@ -596,7 +597,7 @@ body {
 
 @media (min-width: 1600px) {
     html {
-        font-size: 115%;
+        font-size: 100%;
     }
 
     .text-panel p,
