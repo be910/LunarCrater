@@ -303,17 +303,16 @@ body {
     display: grid;
     grid-template-columns: 0.8fr 1.2fr;
     gap: 24px;
-    align-items: start;
+    align-items: stretch;
     min-height: 300px; /* Reduced from 400px */
 }
-
-
 
 /* Stats Container - Left Column */
 #mareStatsContainer {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    justify-content: center;
 }
 
 .stat-item {
