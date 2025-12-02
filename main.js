@@ -123,7 +123,7 @@ function initializeSVGForSection(containerId, interactionType) {
     const g = svg.append("g");
 
     g.append("image")
-        .attr("href", "Astrogeology_Moon_LRO_LROC-WAC_Mosaic_global_1024.jpg")
+        .attr("href", "images/Astrogeology_Moon_LRO_LROC-WAC_Mosaic_global_1024.jpg")
         .attr("width", width)
         .attr("height", height);
 
@@ -146,6 +146,65 @@ function initializeSVGForSection(containerId, interactionType) {
     container.appendChild(svg.node());
     svgInstances[interactionType] = { svg: svg.node(), svgSelection: svg, g, path, projection, interactionType };
 }
+
+// =======================
+// Find the Moon Game
+// =======================
+const moonZone = document.querySelector(".click-zone");
+const feedback = document.getElementById("game-feedback");
+
+const modal = document.getElementById("moon-facts-modal");
+const closeModal = document.getElementById("close-modal");
+const factText = document.getElementById("moon-fact-text");
+
+const funFacts = [
+  "Moon dust smells like burnt gunpowder according to astronauts!",
+  "Moonquakes happen!",
+  "Footprints on the Moon can last millions of years.",
+  "One day on the Moon equals 27 Earth days.",
+  "The Moon is slowly drifting away from Earth (3.8 cm/year).",
+  "Temperatures swing from -173°C to 127°C."
+];
+
+// Correct click
+moonZone.addEventListener("click", (e) => {
+    e.stopPropagation(); 
+
+    feedback.textContent = "🌕 You found the Moon! 🎉";
+
+    setTimeout(() => {
+        feedback.textContent = "";
+
+        // Pick 2 random fun facts
+        const shuffled = funFacts.sort(() => 0.5 - Math.random());
+        const selectedFacts = shuffled.slice(0, 2);
+        factText.innerHTML = selectedFacts.map(f => `• ${f}`).join("<br>");
+
+        modal.style.display = "flex";
+    }, 1000); 
+});
+
+
+// Click elsewhere on the image
+document.getElementById("solar-system").addEventListener("click", (e) => {
+  const zoneRect = moonZone.getBoundingClientRect();
+  if (
+    e.clientX < zoneRect.left ||
+    e.clientX > zoneRect.right ||
+    e.clientY < zoneRect.top ||
+    e.clientY > zoneRect.bottom
+  ) {
+    feedback.textContent = "That's not the Moon...😞";
+
+    setTimeout(() => feedback.textContent = "", 2000);
+  }
+});
+
+closeModal.addEventListener("click", () => modal.style.display = "none");
+window.addEventListener("click", (e) => {
+  if (e.target === modal) modal.style.display = "none";
+});
+
 
 // =======================
 // Section 4: Crater Formation
@@ -445,26 +504,35 @@ function updateTimeline(binIndex) {
     const filtered = allCraters.filter(c => c.size >= minD && c.size < maxD);
 
     // Plot craters
-    craterGroup.selectAll("circle")
-        .data(filtered)
-        .enter()
-        .append("circle")
-        .attr("cx", d => projection([d.longitude, d.latitude])[0])
-        .attr("cy", d => projection([d.longitude, d.latitude])[1])
-        .attr("r", d => Math.max(1, Math.log10(d.size + 2) * 4))
-        // .attr("r", d => Math.max(1, Math.sqrt(d.size)))
-        .attr("fill", "rgba(66, 67, 80, 0.6)")
-        .attr("stroke", "#fdf8f8ff")
-        .attr("stroke-width", 0.5)
-        .append("title")
-        .text(d => `${d.size.toFixed(2)} m`);
+ craterGroup.selectAll("circle")
+    .data(filtered)
+    .enter()
+    .append("circle")
+    .attr("cx", d => projection([d.longitude, d.latitude])[0])
+    .attr("cy", d => projection([d.longitude, d.latitude])[1])
+    .attr("r", d => Math.max(1, Math.log10(d.size + 2) * 4))
+    .attr("fill", "rgba(66, 67, 80, 0.6)")
+    .attr("stroke", "#fdf8f8ff")
+    .attr("stroke-width", 0.5)
+    .on("mouseover", (event, d) => {
+        showTooltip(event, `
+            <strong>Longitude:</strong> ${d.longitude.toFixed(2)}°<br>
+            <strong>Latitude:</strong> ${d.latitude.toFixed(2)}°<br>
+            <strong>Diameter:</strong> ${d.size.toFixed(2)} km
+        `);
+    })
+    .on("mousemove", (event) => {
+        tooltip
+            .style("left", (event.pageX + 12) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", hideTooltip);
 
-    console.log(`Plotted ${filtered.length} craters in bin ${binIndex} (${minD}–${maxD === Infinity ? '∞' : maxD} m)`);
 }
 
 
 function loadCraters() {
-    d3.json("filtered_craters.json").then(data => {
+    d3.json("json/filtered_craters.json").then(data => {
         allCraters = data; // all craters already filtered with mare names
         console.log("Loaded craters:", allCraters.length);
 
@@ -479,7 +547,6 @@ function loadCraters() {
 // Prepare crater data by mare for diameter filtering
 // =======================
 function computeCratersByMare() {
-    // Initialize survivedByMare (we're repurposing it for diameter filtering)
     marePolygons.forEach(mare => {
         const key = mare.properties.Mare.toLowerCase().replace(/\s+/g, "_");
         survivedByMare[key] = [];

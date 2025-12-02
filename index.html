@@ -26,6 +26,11 @@
             <h1>Moonscapes in Motion</h1>
             <h2>Tracking Crater Evolution Across Lunar Seas</h2>
             <p class="subtitle">Visualizing crater formation and evolution across the Moon's mare regions</p>
+            <img 
+                src="images/moon_360.gif" 
+                alt="Lunar animation"
+                class="hero-gif"
+            />
             <div class="scroll-hint">↓ Scroll to begin ↓</div>
         </div>
     </section>
@@ -50,6 +55,16 @@
                 the highlands and the <strong>maria</strong> — the darker basaltic plains 
                 we often see from Earth.
             </p>
+
+            <!-- Find the Moon Game -->
+            <h3> 🌕 Can you find the Moon in our Solar System? 🌕 <br> click on the image below</h3>
+                <div style="position: relative; display: inline-block;">
+                    <img id="solar-system" src="images/moon_game.jpg" alt="Solar System" style="max-width: 70%; height: auto;">
+                 <!-- Clickable area over the Moon -->
+                    <div class="click-zone" style="position:absolute; top:125px; left:388px; width:15px; height:15px;" data-name="Moon"></div>
+                </div>
+            <p id="game-feedback"></p>
+        </div>
         </div>
     </section>
 
@@ -74,6 +89,10 @@
                     <li><strong>Oceanus Procellarum</strong> - The largest mare.</li>
                     <li><strong>Mare Crisium, Fecunditatis, Vaporum</strong> - Lesser-known volcanic plains.</li>
                 </ul>
+
+                <p class="highlight-note">
+                    🔍 Zoom & Hover over mare regions to see their characteristics
+                </p>
             </div>
             <div class="viz-panel">
                 <div id="mareMapVisualization"></div>
@@ -94,6 +113,10 @@
                     The energy released excavates rock and ejects material, 
                     forming bowl-shaped cavities. Larger impacts create multi-ring basins, 
                     while smaller ones leave simple, round craters.
+                </p>
+
+                <p class="highlight-note">
+                    👉 Click on the button to watch animation again
                 </p>
                 <p><strong>The Formation Process:</strong></p>
                 <ul>
@@ -129,9 +152,14 @@
                 In the next section, you can click on individual mare regions
                 to see their specific crater statistics.
             </p>
+
             <ul>
-                <li><span class="diameter-indicator">●</span> <strong>Crater diameter</strong> - size in meters</li>
+                <li><span class="diameter-indicator">●</span> <strong>Crater diameter</strong> - size in km</li>
             </ul>
+
+             <p class="highlight-note">
+                🔍 Zoom & Hover over the craters to see its details
+            </p>
         </div>
 
         <div class="viz-panel">
@@ -139,7 +167,7 @@
                 <label for="timestepSlider">Diameter Scale (km):</label>
                 <div class="slider-wrapper">
                     <input type="range" id="timestepSlider" min="0" max="9" value="0" step="1">
-                    <span id="timestepValue" class="timestep-display">≤ 1 m</span>
+                    <span id="timestepValue" class="timestep-display">≤ 1 km</span>
                 </div>
             </div>
 
@@ -161,7 +189,7 @@
                 Click on a mare to reveal its most extreme craters and statistics.
             </p>
             <p class="highlight-note">
-                👉 Click on any mare region on the map to see detailed crater evolution data
+                👉 Click on any mare region on the map to see detailed crater statistics
             </p>
 
             <!-- Mare Stats Panel -->
@@ -222,6 +250,15 @@
             </p>
         </div>
     </section>
+
+<!-- Modal for Moon Fact -->
+    <div id="moon-facts-modal" class="modal">
+        <div class="modal-content">
+        <span id="close-modal" class="close">&times;</span>
+         <h3 style="font-size: 1.5rem; color: #f6f5f2;">🌕 Fun Fact About the Moon:</h3>
+        <p id="moon-fact-text"></p>
+        </div>
+    </div>
 
 </body>
 </html>
