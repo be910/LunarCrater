@@ -370,7 +370,7 @@ body {
     display: grid;
     grid-template-columns: 0.8fr 1.2fr;
     gap: 24px;
-    align-items: stretch;
+    align-items: start;
     min-height: 300px; /* Reduced from 400px */
 }
 
@@ -380,6 +380,10 @@ body {
     flex-direction: column;
     gap: 20px;
     justify-content: center;
+}
+
+#mareStatsContainer p {
+    margin: 1px 0;  /*  adjust the number to increase/decrease spacing */
 }
 
 .stat-item {
