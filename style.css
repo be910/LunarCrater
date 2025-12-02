@@ -237,7 +237,7 @@ body {
 /* ============================
    Visualization Containers
 ============================ */
-#mareMapVisualization,
+/* #mareMapVisualization,
 #craterVizVisualization,
 #mareStatsVisualization,
 #timelineVisualization {
@@ -249,7 +249,7 @@ body {
     background: rgba(0,0,0,0.2);
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-}
+} */
 
 #mareMapVisualization svg,
 #craterVizVisualization svg,
