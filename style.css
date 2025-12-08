@@ -611,8 +611,6 @@ body {
     }
 }
 
-<<<<<<< HEAD
-=======
 #mareButtons {
     text-align: center;
 }
@@ -643,4 +641,23 @@ body {
 }
 
 
->>>>>>> beda1ee61e7a878e608ee45bf7c05d1a1e69d6f3
+.fullpage-section .section-content p.citation {
+    margin-top: 3rem;
+    font-size: 1.0rem !important;
+    color: #e9da68;
+    line-height: 1.6;
+    max-width: 800px;
+    text-align: left;
+}
+    
+.fullpage-section .section-content p.citation strong {
+    color: #f9faf1;
+}
+
+.fullpage-section .section-content p.citation a {
+    color: #5c8ad9;
+    text-decoration: none;
+}
+.fullpage-section .section-content p.citation a:hover {
+    text-decoration: underline;
+}   
