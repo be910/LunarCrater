@@ -596,7 +596,7 @@ body {
     justify-content: center;  /* Optional: vertical centering */
 }
 
-@media (min-width: 1600px) {
+@media (min-width: 1440px) {
     html {
         font-size: 100%;
     }
@@ -610,3 +610,4 @@ body {
         max-width: 1000px;
     }
 }
+
