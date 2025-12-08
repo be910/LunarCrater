@@ -622,4 +622,22 @@ body {
     padding-top: 10px;  
 }
 
+.animationbutton {
+  background: #3a3a3a;        /* solid grey */
+  color: #4da3ff;             /* soft blue text */
+  padding: 16px 40px;
+  border: none;
+  border-radius: 40px;        /* same pill shape */
+  font-size: 22px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.animationbutton:hover {
+  background: #4a4a4a;        /* slightly lighter grey on hover */
+  color: #78b7ff;             /* brighter blue on hover */
+  transform: translateY(-2px);
+}
+
 
