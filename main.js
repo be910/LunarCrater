@@ -589,7 +589,7 @@ function setupSlider() {
                 // Update label to show actual meter range
                 const minD = diameterBins[binIndex];
                 const maxD = diameterBins[binIndex + 1];
-                label.textContent = maxD ? `${minD}–${maxD} m` : `> ${minD} m`;
+                label.textContent = maxD ? `${minD}–${maxD} km` : `> ${minD} km`;
 
                 // Section 5: update timeline visualization
                 updateTimeline(binIndex);
